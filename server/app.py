@@ -1,21 +1,24 @@
-import json
-import os
+import asyncio
+import websockets
 
-def save_data(filename, data):
-    with open(filename, "w") as f:
-        json.dump(data, f)
-    print("Saved to", filename)
+connected_users = set()
 
-def load_data(filename):
-    if os.path.exists(filename):
-        with open(filename, "r") as f:
-            return json.load(f)
-    return []
+async def handle_message(websocket):
+    connected_users.add(websocket)
+    print("User connected! Total:", len(connected_users))
+    try:
+        async for message in websocket:
+            print("Message received:", message)
+            for user in connected_users:
+                if user != websocket:
+                    await user.send(message)
+    finally:
+        connected_users.remove(websocket)
+        print("User disconnected! Total:", len(connected_users))
 
-save_data("server/database/messages.json", [
-    {"sender": "Himanshu", "text": "Hello!"},
-    {"sender": "Sarah", "text": "Hi there!"}
-])
+async def main():
+    server = await websockets.serve(handle_message, "localhost", 8765)
+    print("Server started on port 8765!")
+    await server.wait_closed()
 
-data = load_data("server/database/messages.json")
-print("Loaded:", data)
+asyncio.run(main())
