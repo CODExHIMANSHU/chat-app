@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+        #chat { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin: 10px 0; }
+        .me { color: blue; text-align: right; }
+        .other { color: green; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        button { padding: 8px 15px; background: blue; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>💬 Chat App</h1>
+    <input id="name" placeholder="Your name" />
+    <br>
+    <div id="chat"></div>
+    <input id="message" placeholder="Type message" />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const ws = new WebSocket("ws://localhost:8765");
+        const myName = document.getElementById("name");
+
+        ws.onmessage = function(event) {
+            const chat = document.getElementById("chat");
+            const parts = event.data.split(": ");
+            const isMe = parts[0] === myName.value;
+            chat.innerHTML += "<p class='" + (isMe ? "me" : "other") + "'>" + event.data + "</p>";  

@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Chat App</title>
+<title>Chat App</title>
+<style>
+body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+#chat { height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+.me { color: blue; text-align: right; }
+.other { color: green; }
+</style>
 </head>
 <body>
-    <h1>Chat App</h1>
-    <input id="name" placeholder="Your name" />
-    <input id="message" placeholder="Type message" />
-    <button onclick="sendMessage()">Send</button>
-    <div id="chat"></div>
-
-    <script>
-        const ws = new WebSocket("ws://localhost:8765");
-        ws.onmessage = function(event) {
-            const chat = document.getElementById("chat");
-            chat.innerHTML += "<p>" + event.data + "</p>";
-        };
-        function sendMessage() {
-            const name = document.getElementById("name").value;
-            const msg = document.getElementById("message").value;
-            ws.send(name + ": " + msg);
-        }
-    </script>
+<h1>Chat App</h1>
+<input id="name" placeholder="Your name" /><br><br>
+<div id="chat"></div>
+<input id="message" placeholder="Type message" />
+<button onclick="sendMessage()">Send</button>
+<script>
+var ws = new WebSocket("ws://localhost:8765");
+ws.onmessage = function(e) {
+    document.getElementById("chat").innerHTML += "<p>" + e.data + "</p>";
+};
+function sendMessage() {
+    var name = document.getElementById("name").value;
+    var msg = document.getElementById("message").value;
+    ws.send(name + ": " + msg);
+    document.getElementById("message").value = "";
+}
+</script>
 </body>
 </html>

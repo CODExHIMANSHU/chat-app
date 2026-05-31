@@ -1,7 +1,22 @@
 import asyncio
 import websockets
+import json
+import os
 
 connected_users = set()
+MESSAGE_FILE="server/databse/messages.json"
+
+def load_messages():
+    if os.path.exists(MESSAGE_FILE):
+        with open(MESSAGE_FILE,"r")as f:
+            return json.load(f)
+        return[]
+
+def save_message(sender,text):
+    messages=load_messages()
+    messages.append({"sender":sender,"text":text})
+    with open(MESSAGE_FILE,"w")as f:
+        json.dump(messages,f)
 
 async def handle_message(websocket):
     connected_users.add(websocket)
