@@ -1,36 +1,44 @@
+import json
+import os
+
+USERS_FILE = "server/database/users.json"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+
 def create_user(name, password):
-    user = {
-        "name": name,
-        "password": password
-    }
+    users = load_users()
+    user = {"name": name, "password": password}
+    users.append(user)
+    save_users(users)
     print("User created:", user)
     return user
 
-def get_user(users_list, name):
-    for user in users_list:
+def get_user(name):
+    users = load_users()
+    for user in users:
         if user["name"] == name:
             return user
     return None
 
-def update_user(users_list, name, new_password):
-    for user in users_list:
+def update_user(name, new_password):
+    users = load_users()
+    for user in users:
         if user["name"] == name:
             user["password"] = new_password
-            return user
-    return None
-
-def delete_user(users_list, name):
-    for user in users_list:
-        if user["name"] == name:
-            users_list.remove(user)
+            save_users(users)
             return True
     return False
 
-users = []
-users.append(create_user("Himanshu", "1234"))
-users.append(create_user("Sarah", "5678"))
-print("Find Sarah:", get_user(users, "Sarah"))
-update_user(users, "Himanshu", "newpass")
-print("Updated Himanshu:", get_user(users, "Himanshu"))
-delete_user(users, "Sarah")
-print("After delete:", users)
+def delete_user(name):
+    users = load_users()
+    updated = [u for u in users if u["name"] != name]
+    save_users(updated)
+    return True                                                                

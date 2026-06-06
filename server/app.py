@@ -4,32 +4,43 @@ import json
 import os
 
 connected_users = set()
-MESSAGE_FILE="server/databse/messages.json"
+MESSAGE_FILE = "server/database/messages.json"  # Fixed typo: databse → database
 
 def load_messages():
     if os.path.exists(MESSAGE_FILE):
-        with open(MESSAGE_FILE,"r")as f:
+        with open(MESSAGE_FILE, "r") as f:
             return json.load(f)
-        return[]
+    return []  # Fixed: this was indented inside the if block before — now it always returns []
 
-def save_message(sender,text):
-    messages=load_messages()
-    messages.append({"sender":sender,"text":text})
-    with open(MESSAGE_FILE,"w")as f:
-        json.dump(messages,f)
+def save_message(sender, text):
+    messages = load_messages()
+    messages.append({"sender": sender, "text": text})
+    with open(MESSAGE_FILE, "w") as f:
+        json.dump(messages, f)
 
 async def handle_message(websocket):
     connected_users.add(websocket)
-    print("User connected! Total:", len(connected_users))
+
+    # Phase 6: First message from client = username
+    username = await websocket.recv()
+    print(f"[+] {username} connected! Total: {len(connected_users)}")
+
     try:
         async for message in websocket:
-            print("Message received:", message)
+            print(f"Message from {username}: {message}")
+
+            # Save to file
+            save_message(username, message)
+
+            # Attach username and broadcast to everyone else
+            full_message = f"{username}: {message}"
             for user in connected_users:
                 if user != websocket:
-                    await user.send(message)
+                    await user.send(full_message)
+
     finally:
         connected_users.remove(websocket)
-        print("User disconnected! Total:", len(connected_users))
+        print(f"[-] {username} disconnected! Total: {len(connected_users)}")
 
 async def main():
     server = await websockets.serve(handle_message, "localhost", 8765)
